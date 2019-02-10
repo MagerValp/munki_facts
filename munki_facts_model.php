@@ -28,7 +28,7 @@ class Munki_facts_model extends Model
                 ".get_machine_group_filter()."
                 GROUP BY fact_key
                 ORDER BY COUNT DESC";
-        
+
         foreach ($this->query($sql) as $obj) {
             if ("$obj->count" !== "0") {
                 $obj->fact_key = $obj->fact_key ? $obj->fact_key : 'Unknown';
@@ -51,7 +51,8 @@ class Munki_facts_model extends Model
 
         $plist = $parser->toArray();
         $this->deleteWhere('serial_number=?', $this->serial_number);
-        while (list($key, $val) = each($plist)) {
+        foreach($plist as $key => $val)
+        {
                 $this->fact_key = $key;
                 $this->fact_value = $val;
 
