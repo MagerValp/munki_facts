@@ -18,25 +18,24 @@ $(document).on('appReady', function(e, lang) {
 
   // Get munki_facts data
   $.getJSON( appUrl + '/module/munki_facts/get_data/' + serialNumber, function( data ) {
-    if( Object.keys(data).length === 0 ){
+    if( data.length === 0 ){
       $('#munki_facts-msg').text(i18n.t('munki_facts.not_found'));
+      return;
     }
-    else{
+
       // Hide
       $('#munki_facts-msg').text('');
       $('#munki_facts-view').removeClass('hide');
-                  
-      // Add data
-      for (var key in data) {
+
+    $.each(data, function(i,d){
+
         $('#munki_facts-table tbody').append(
             $('<tr/>').append(
-                $('<th/>').text(key),
-                $('<td/>').text(data[key])
+                $('<th/>').text(d['fact_key']),
+                $('<td/>').text(d['fact_value'])
             )
         )
-      }
-    }
-
+      })
   });
 });
   

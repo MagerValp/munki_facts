@@ -1,92 +1,45 @@
-<?php
+<?php 
+
 /**
- * munki_facts status module class
+ * munki_facts class
  *
  * @package munkireport
- * @author nperkins487
- *
+ * @author 
  **/
 class Munki_facts_controller extends Module_controller
 {
-    
-    protected $module_path;
-    protected $view_path;
-
-
-  /*** Protect methods with auth! ****/
-    public function __construct()
+	    function __construct()
     {
-      // Store module path
+        // Store module path
         $this->module_path = dirname(__FILE__);
-        $this->view_path = dirname(__FILE__) . '/views/';
     }
-  /**
-   * Default method
-   *
-   * @author
-   **/
-    public function index()
-    {
-        echo "You've loaded the munki_facts module!";
-    }
-  
+	
     /**
-    * undocumented function summary
-    *
-    * Undocumented function long description
-    *
-    * @param type var Description
-    * @return {11:return type}
-    */
-    public function listing($value = '')
-    {
-        if (! $this->authorized()) {
-            redirect('auth/login');
-        }
-        $data['page'] = 'clients';
-        $data['scripts'] = array("clients/client_list.js");
-        $obj = new View();
-        $obj->view('munki_facts_listing', $data, $this->view_path);
-    }
-
-    /**
-     * Get munki facts for serial_number
+     * Get munki_facts information for serial_number
      *
      * @param string $serial serial number
-     * @author clburlison
      **/
-    public function get_data($serial = '')
+    public function get_data($serial_number = '')
     {
-
-        $out = array();
-        $temp = array();
-        if (! $this->authorized()) {
-            $out['error'] = 'Not authorized';
-        } else {
-            $munki_facts = new munki_facts_model;
-            foreach ($munki_facts->retrieve_records($serial) as $facts) {
-                $temp[] = $facts->rs;
-            }
-            foreach ($temp as $value) {
-                $out[$value['fact_key']] = $value['fact_value'];
-            }
-        }
-
-        $obj = new View();
-        $obj->view('json', array('msg' => $out));
+        jsonView(
+            Munki_facts_model::select('munki_facts.*')
+            ->whereSerialNumber($serial_number)
+            ->filter()
+            ->get()
+            ->toArray()
+        );
     }
-    
-    public function get_facts_report()
-     {
-        $obj = new View();
 
-        if (! $this->authorized()) {
-            $obj->view('json', array('msg' => array('error' => 'Not authenticated')));
-            return;
-        }
-        
-        $munki_facts = new Munki_facts_model;
-        $obj->view('json', array('msg' => $munki_facts->get_facts_report()));
-     }
-
-} // END class default_module
+    public function get_list()
+    {
+        jsonView(
+            Munki_facts_model::select('fact_key AS label')
+                ->selectRaw('count(*) AS count')
+                ->filter()
+                ->groupBy('fact_key')
+                ->orderBy('count', 'desc')
+                ->get()
+                ->toArray()
+        );
+    }
+} 
